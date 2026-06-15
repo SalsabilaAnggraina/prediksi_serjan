@@ -1,4 +1,4 @@
-# 🩺 Laporan Proyek Machine Learning: Klasifikasi Risiko Serangan Jantung
+# 🩺 Laporan Proyek Machine Learning: Prediksi Risiko Serangan Jantung
 
 * **Metodologi Penelitian:** CRISP-DM (*Cross-Industry Standard Process for Data Mining*) 📊
 * **Penyusun:** [Suci Oktavia Ramadhani & Salsabila Anggraina Putri] 👥
@@ -9,7 +9,7 @@
 ## 📌 1. Project Overview
 Penyakit kardiovaskular, khususnya serangan jantung, tetap menjadi salah satu penyebab utama mortalitas tertinggi di Indonesia. Sifat gejalanya yang acap kali asimtomatik (*silent killer*) diperparah oleh banyaknya faktor risiko multidimensional yang saling berkorelasi, mencakup aspek demografi, kondisi klinis, hingga pola hidup pasien. 💔
 
-Proyek ini dicanangkan untuk membangun sebuah sistem komputasi cerdas berbasis *Machine Learning* yang mampu mengklasifikasikan tingkat risiko serangan jantung pada masyarakat secara dini. Implementasi ini diharapkan dapat menjadi instrumen skrining preventif bagi tenaga medis maupun masyarakat umum. 🩺✨
+Proyek ini dicanangkan untuk membangun sebuah sistem komputasi cerdas berbasis *Machine Learning* yang mampu memprediksi tingkat risiko serangan jantung pada masyarakat secara dini. Implementasi ini diharapkan dapat menjadi instrumen skrining preventif bagi tenaga medis maupun masyarakat umum. 🩺✨
 
 ---
 
