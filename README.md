@@ -76,13 +76,13 @@ Pengujian performa model dilakukan secara objektif menggunakan data uji yang bel
 | **Recall (Sensitivitas Kelas 1)** | 0.51 | **0.54** |
 | **F1-Score (Kelas 1)** | 0.57 | **0.59** |
 
-*Kesimpulan Analisis:* 
+**Kesimpulan Analisis:** 
 Meskipun kedua model menghasilkan nilai akurasi global yang sama yaitu **70%**, **XGBoost Classifier** terbukti lebih unggul dalam aspek **Recall** untuk kelas berisiko tinggi (Kelas 1), yaitu sebesar **0.54** dibandingkan Logistic Regression yang hanya **0.51**. Dalam konteks medis, peningkatan nilai *Recall* ini sangat krusial karena berhasil mereduksi jumlah pasien berisiko yang salah terprediksi sebagai pasien sehat (*False Negative*). Oleh karena itu, XGBoost dipilih sebagai model akhir untuk tahap *deployment*.🎉
 
 ---
 
 ## 🚀 7. Deployment
-Model terbaik (**XGBoost**) berserta objek **StandardScaler** diekspor ke dalam berkas biner `.pkl` memanfaatkan pustaka `joblib`. 📦
+Model terbaik (**XGBoost**) beserta objek **StandardScaler** diekspor ke dalam berkas biner `.pkl` memanfaatkan pustaka `joblib`. 📦
 
 Sistem dideploy secara publik pada platform cloud **Hugging Face Spaces** dengan menggunakan framework antarmuka **Gradio**. Aplikasi dirancang dengan panel kendali interaktif seperti *sliders* dan *dropdown selection*, memungkinkan praktisi medis untuk memasukkan indikator klinis pasien baru dan mendapatkan kalkulasi probabilitas risiko secara *real-time*. ⚙️🌐
 
