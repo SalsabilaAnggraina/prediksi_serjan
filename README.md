@@ -67,16 +67,17 @@ Tahap permodelan mengevaluasi dan mengonfrontasi dua pendekatan arsitektur klasi
 ## 🏆 6. Evaluation
 Pengujian performa model dilakukan secara objektif menggunakan data uji yang belum pernah dilihat sebelumnya selama fase pelatihan. Mengingat domain penelitian berada pada sektor medis, metrik **Recall** menjadi prioritas evaluasi utama. 📊🔬
 
-*(Silakan perbarui angka matriks di bawah ini berdasarkan tabel klasifikasi asli di Google Colab Anda)*
+### Hasil Performa Model:
 
 | Metrik Evaluasi | Logistic Regression (Baseline) 📉 | XGBoost Classifier (Advanced) ⚡ |
 | :--- | :---: | :---: |
-| **Akurasi Global** | 0.XX (XX%) | **0.XX (XX%)** |
-| **Precision** | 0.XX | **0.XX** |
-| **Recall (Sensitivitas)** | 0.XX | **0.XX** |
-| **F1-Score** | 0.XX | **0.XX** |
+| **Akurasi Global** | 0.70 (70%) | **0.70 (70%)** |
+| **Precision (Kelas 1)** | 0.65 | **0.65** |
+| **Recall (Sensitivitas Kelas 1)** | 0.51 | **0.54** |
+| **F1-Score (Kelas 1)** | 0.57 | **0.59** |
 
-*Kesimpulan Analisis:* Berdasarkan hasil pengujian, **XGBoost Classifier** menunjukkan performa yang jauh lebih unggul dan presisi. Tingginya nilai *Recall* pada XGBoost memvalidasi bahwa model ini sangat andal digunakan sebagai sistem deteksi dini dengan risiko misdiagnosis yang minim. 🎉
+*Kesimpulan Analisis:* 
+Meskipun kedua model menghasilkan nilai akurasi global yang sama yaitu **70%**, **XGBoost Classifier** terbukti lebih unggul dalam aspek **Recall** untuk kelas berisiko tinggi (Kelas 1), yaitu sebesar **0.54** dibandingkan Logistic Regression yang hanya **0.51**. Dalam konteks medis, peningkatan nilai *Recall* ini sangat krusial karena berhasil mereduksi jumlah pasien berisiko yang salah terprediksi sebagai pasien sehat (*False Negative*). Oleh karena itu, XGBoost dipilih sebagai model akhir untuk tahap *deployment*.🎉
 
 ---
 
