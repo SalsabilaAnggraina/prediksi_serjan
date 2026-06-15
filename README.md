@@ -1,4 +1,5 @@
 # 🩺 Laporan Proyek Machine Learning: Prediksi Risiko Serangan Jantung
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/SalsabilaAnggraina/prediksi_serjan/blob/main/PrediksiSerJan.ipynb)
 
 * **Metodologi Penelitian:** CRISP-DM (*Cross-Industry Standard Process for Data Mining*) 📊
 * **Penyusun:** [Suci Oktavia Ramadhani & Salsabila Anggraina Putri] 👥
