@@ -45,15 +45,92 @@ Eksperimen ini memanfaatkan dataset rekam medis masyarakat Indonesia dari [Kaggl
 * 🤯 `stress_level`: Indikator skala beban psikologis internal (Ordinal: Skala 1 - 10).
 * 🎯 `heart_attack`: **Variabel Target / Label** (Biner: 0 = Risiko Rendah, 1 = Risiko Tinggi).
 
+```python
+# =====================================================================
+# LOAD DATA & DATA UNDERSTANDING
+# =====================================================================
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from IPython.display import Image, display
+
+# Membaca file dataset
+from google.colab import drive
+drive.mount('/content/drive/')
+df = pd.read_csv('/content/drive/MyDrive/ML/heart_attack_prediction_indonesia.csv')
+
+print("=== DIMENSI DATA ===")
+print(f"Jumlah baris: {df.shape[0]}, Jumlah kolom: {df.shape[1]}\n")
+
+print("=== INFORMASI DATASET ===")
+df.info()
+```
+
 ---
 
 ## 🛠️ 4. Data Preparation
 Untuk menjamin integritas data sebelum memasuki fase pelatihan (*training*), serangkaian tahap rekayasa data berikut telah diterapkan: 🏗️
 
-1. **Label Encoding🧙‍♂️:** Melakukan konversi otomatis pada fitur-fitur kategorikal bertipe teks menjadi representasi numerik agar dapat diproses oleh algoritma.
-2. **Feature Selection🎯:** Membatasi variabel prediktor dengan hanya memilih 9 fitur utama yang memiliki signifikansi klinis berdasarkan fokus studi penelitian.
+1. **Label Encoding 🧙‍♂️:** Melakukan konversi otomatis pada fitur-fitur kategorikal bertipe teks menjadi representasi numerik agar dapat diproses oleh algoritma.
+2. **Feature Selection 🎯:** Membatasi variabel prediktor dengan hanya memilih 9 fitur utama yang memiliki signifikansi klinis berdasarkan fokus studi penelitian.
 3. **Train-Test Split ✂️:** Membagi data secara acak menggunakan proporsi **80% Data Latih** dan **20% Data Uji** dengan menyematkan parameter `stratify` guna menjaga kestabilan distribusi label target.
 4. **Feature Scaling 📏:** Menerapkan `StandardScaler` untuk menyamakan skala varians pada fitur numerik berjangkauan luas (seperti kolesterol) agar tidak mendominasi proses pembaruan bobot (*weight*) model.
+
+```python
+# =====================================================================
+# EXPLORATORY DATA ANALYSIS (EDA)
+# =====================================================================
+# 1. Visualisasi Distribusi Target
+plt.figure(figsize=(12, 5))
+plt.subplot(1, 2, 1)
+sns.countplot(x='heart_attack', data=df, palette='Set2')
+plt.title('Distribusi Variabel Target (Heart Attack)')
+plt.xlabel('Status (0: Aman, 1: Serangan Jantung)')
+
+# 2. Visualisasi Hubungan Usia dengan Serangan Jantung
+plt.subplot(1, 2, 2)
+sns.boxplot(x='heart_attack', y='age', data=df, palette='Pastel1')
+plt.title('Hubungan Usia vs Kejadian Serangan Jantung')
+plt.xlabel('Status Serangan Jantung')
+plt.ylabel('Usia (Tahun)')
+
+plt.tight_layout()
+plt.savefig('img/1.png', dpi=150, bbox_inches='tight')
+plt.close()
+
+display(Image(filename='img/1.png'))
+```
+
+```python
+# =====================================================================
+# DATA PREPARATION EXECUTIONS
+# =====================================================================
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+
+df_prepared = df.copy()
+
+le = LabelEncoder()
+for col in df_prepared.columns:
+    if df_prepared[col].dtype == 'object':
+        df_prepared[col] = le.fit_transform(df_prepared[col].astype(str))
+
+fitur_pilihan = ['age', 'gender', 'hypertension', 'diabetes', 'cholesterol_level',
+                 'obesity', 'smoking_status', 'dietary_habits', 'stress_level']
+
+X = df_prepared[fitur_pilihan].fillna(0)
+y = df_prepared['heart_attack']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+print("Proses Data Preparation Selesai Sukses!")
+print(f"X_train shape: {X_train_scaled.shape} | X_test shape: {X_test_scaled.shape}")
+```
 
 ---
 
@@ -62,6 +139,22 @@ Tahap permodelan mengevaluasi dan mengonfrontasi dua pendekatan arsitektur klasi
 
 * **Logistic Regression:** Algoritma parametrik yang memetakan kombinasi linear dari fitur input ke dalam fungsi sigmoid untuk menghasilkan output probabilitas. 📉
 * **XGBoost Classifier:** Algoritma berbasis *ensemble decision trees* sekuensial yang menerapkan regularisasi formal dan minimalisasi fungsi kerugian (*loss function*) secara presisi guna mereduksi *overfitting*. ⚡
+
+```python
+# =====================================================================
+# MODELING TRAINING
+# =====================================================================
+from sklearn.linear_model import LogisticRegression
+from xgboost import XGBClassifier
+
+model_lr = LogisticRegression(random_state=42)
+model_xgb = XGBClassifier(random_state=42, eval_metric='logloss')
+
+model_lr.fit(X_train_scaled, y_train)
+model_xgb.fit(X_train_scaled, y_train)
+
+print("Model Logistic Regression dan XGBoost Classifier berhasil dilatih!")
+```
 
 ---
 
@@ -77,8 +170,41 @@ Pengujian performa model dilakukan secara objektif menggunakan data uji yang bel
 | **Recall (Sensitivitas Kelas 1)** | 0.51 | **0.54** |
 | **F1-Score (Kelas 1)** | 0.57 | **0.59** |
 
-**Kesimpulan Analisis:** 
-Meskipun kedua model menghasilkan nilai akurasi global yang sama yaitu **70%**, **XGBoost Classifier** terbukti lebih unggul dalam aspek **Recall** untuk kelas berisiko tinggi (Kelas 1), yaitu sebesar **0.54** dibandingkan Logistic Regression yang hanya **0.51**. Dalam konteks medis, peningkatan nilai *Recall* ini sangat krusial karena berhasil mereduksi jumlah pasien berisiko yang salah terprediksi sebagai pasien sehat (*False Negative*). Oleh karena itu, XGBoost dipilih sebagai model akhir untuk tahap *deployment*.🎉
+**Kesimpulan Analisis:**
+Meskipun kedua model menghasilkan nilai akurasi global yang sama yaitu **70%**, **XGBoost Classifier** terbukti lebih unggul dalam aspek **Recall** untuk kelas berisiko tinggi (Kelas 1), yaitu sebesar **0.54** dibandingkan Logistic Regression yang hanya **0.51**. Dalam konteks medis, peningkatan nilai *Recall* ini sangat krusial karena berhasil mereduksi jumlah pasien berisiko yang salah terprediksi sebagai pasien sehat (*False Negative*). Oleh karena itu, XGBoost dipilih sebagai model akhir untuk tahap *deployment*. 🎉
+
+```python
+# =====================================================================
+# EVALUATION & CONFUSION MATRIX VISUALIZATION
+# =====================================================================
+from sklearn.metrics import classification_report, confusion_matrix
+
+y_pred_lr = model_lr.predict(X_test_scaled)
+y_pred_xgb = model_xgb.predict(X_test_scaled)
+
+print("=================== REPORT LOGISTIC REGRESSION ===================")
+print(classification_report(y_test, y_pred_lr))
+
+print("\n==================== REPORT XGBOOST CLASSIFIER ===================")
+print(classification_report(y_test, y_pred_xgb))
+
+fig, ax = plt.subplots(1, 2, figsize=(14, 5))
+sns.heatmap(confusion_matrix(y_test, y_pred_lr), annot=True, fmt='d', cmap='Blues', ax=ax[0])
+ax[0].set_title('Confusion Matrix - Logistic Regression')
+ax[0].set_xlabel('Prediksi')
+ax[0].set_ylabel('Kenyataan Asli')
+
+sns.heatmap(confusion_matrix(y_test, y_pred_xgb), annot=True, fmt='d', cmap='Greens', ax=ax[1])
+ax[1].set_title('Confusion Matrix - XGBoost Classifier')
+ax[1].set_xlabel('Prediksi')
+ax[1].set_ylabel('Kenyataan Asli')
+
+plt.tight_layout()
+plt.savefig('img/2.png', dpi=150, bbox_inches='tight')
+plt.close()
+
+display(Image(filename='img/2.png'))
+```
 
 ---
 
@@ -86,6 +212,20 @@ Meskipun kedua model menghasilkan nilai akurasi global yang sama yaitu **70%**, 
 Model terbaik (**XGBoost**) beserta objek **StandardScaler** diekspor ke dalam berkas biner `.pkl` memanfaatkan pustaka `joblib`. 📦
 
 Sistem dideploy secara publik pada platform cloud **Hugging Face Spaces** dengan menggunakan framework antarmuka **Gradio**. Aplikasi dirancang dengan panel kendali interaktif seperti *sliders* dan *dropdown selection*, memungkinkan praktisi medis untuk memasukkan indikator klinis pasien baru dan mendapatkan kalkulasi probabilitas risiko secara *real-time*. ⚙️🌐
+
+```python
+import joblib
+from google.colab import files
+
+joblib.dump(model_xgb, 'model_SerJan_xgb.pkl')
+joblib.dump(scaler, 'scaler.pkl')
+
+print("Berhasil membuat file .pkl!")
+
+print("Memulai pengunduhan file ke komputer...")
+files.download('model_SerJan_xgb.pkl')
+files.download('scaler.pkl')
+```
 
 👉 **[Buka Aplikasi Demo Prediksi Risiko Serangan Jantung](https://huggingface.co/spaces/saggrain/prediksi-SerJan)** 👈
 
