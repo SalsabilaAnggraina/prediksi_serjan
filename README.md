@@ -31,7 +31,7 @@ Proyek ini dicanangkan untuk membangun sebuah sistem komputasi cerdas berbasis *
 ---
 
 ## 📊 3. Data Understanding
-Eksperimen ini memanfaatkan dataset rekam medis masyarakat Indonesia dari [Kaggle](https://www.kaggle.com/datasets/ankushpanday2/heart-attack-prediction-in-indonesia) (`heart_attack_prediction_indonesia.csv`) yang mencakup parameter klinis, demografi, dan psikologis. 🗂️
+Eksperimen ini memanfaatkan dataset rekam medis masyarakat Indonesia dari [Kaggle](https://www.kaggle.com/datasets/ankushpanday2/heart-attack-prediction-in-indonesia) (`heart_attack_prediction_indonesia.csv`) yang mencakup parameter klinis, demografi, dan psikologis. Dataset ini memiliki **158.355 baris** dan **28 kolom**. 🗂️
 
 ### 🔍 Glosarium Fitur Dataset
 
@@ -61,7 +61,6 @@ from IPython.display import Image, display
 ### ▶️ Load Dataset
 
 ```python
-# Membaca file dataset
 from google.colab import drive
 drive.mount('/content/drive/')
 df = pd.read_csv('/content/drive/MyDrive/ML/heart_attack_prediction_indonesia.csv')
@@ -75,25 +74,39 @@ df.info()
 
 ---
 
-## 🛠️ 4. Data Preparation
-Untuk menjamin integritas data sebelum memasuki fase pelatihan (*training*), serangkaian tahap rekayasa data berikut telah diterapkan: 🏗️
+## 🔎 4. Exploratory Data Analysis (EDA)
 
-1. **Label Encoding 🧙‍♂️:** Melakukan konversi otomatis pada fitur-fitur kategorikal bertipe teks menjadi representasi numerik agar dapat diproses oleh algoritma.
-2. **Feature Selection 🎯:** Membatasi variabel prediktor dengan hanya memilih 9 fitur utama yang memiliki signifikansi klinis berdasarkan fokus studi penelitian.
-3. **Train-Test Split ✂️:** Membagi data secara acak menggunakan proporsi **80% Data Latih** dan **20% Data Uji** dengan menyematkan parameter `stratify` guna menjaga kestabilan distribusi label target.
-4. **Feature Scaling 📏:** Menerapkan `StandardScaler` untuk menyamakan skala varians pada fitur numerik berjangkauan luas (seperti kolesterol) agar tidak mendominasi proses pembaruan bobot (*weight*) model.
+Sebelum melakukan pembersihan, kita bedah terlebih dahulu kondisi data mentah untuk memahami pola, distribusi, dan potensi masalah yang ada.
 
-### ▶️ Visualisasi EDA — Distribusi Target & Hubungan Usia
+### 😖 Kondisi Data Mentah
+
+- ✅ **Tidak ada data duplikat** — dataset bersih dari baris yang identik
+- ⚠️ **Missing Values** — kolom `alcohol_consumption` memiliki **94.848 nilai kosong** (~59.9% dari total data)
+- 📊 **Distribusi Target** — kelas tidak seimbang: **94.854 data Tidak Serangan (0)** vs **63.501 data Serangan Jantung (1)**
+
+### ▶️ Cek Kondisi Data Mentah
 
 ```python
-# 1. Visualisasi Distribusi Target
+print("=== 🔴 KONDISI SEBELUM PEMBERSIHAN (RAW DATA) ===")
+print(f"Total Baris   : {len(df)}")
+print(f"Total Kolom   : {df.shape[1]}")
+print(f"Jumlah Duplikat: {df.duplicated().sum()}")
+print("\nJumlah Missing Values per Kolom:")
+print(df.isnull().sum()[df.isnull().sum() > 0])
+
+print("\nStatistik Deskriptif:")
+display(df.describe())
+```
+
+### ▶️ Visualisasi Distribusi Target & Hubungan Usia
+
+```python
 plt.figure(figsize=(12, 5))
 plt.subplot(1, 2, 1)
 sns.countplot(x='heart_attack', data=df, palette='Set2')
 plt.title('Distribusi Variabel Target (Heart Attack)')
 plt.xlabel('Status (0: Aman, 1: Serangan Jantung)')
 
-# 2. Visualisasi Hubungan Usia dengan Serangan Jantung
 plt.subplot(1, 2, 2)
 sns.boxplot(x='heart_attack', y='age', data=df, palette='Pastel1')
 plt.title('Hubungan Usia vs Kejadian Serangan Jantung')
@@ -105,6 +118,17 @@ plt.show()
 ```
 
 ![Visualisasi EDA](img/1.png)
+
+---
+
+## 🛠️ 5. Data Preparation
+
+Untuk menjamin integritas data sebelum memasuki fase pelatihan, serangkaian tahap rekayasa data berikut telah diterapkan: 🏗️
+
+1. **Label Encoding 🧙‍♂️:** Melakukan konversi otomatis pada fitur-fitur kategorikal bertipe teks menjadi representasi numerik.
+2. **Feature Selection 🎯:** Membatasi variabel prediktor dengan hanya memilih 9 fitur utama yang memiliki signifikansi klinis.
+3. **Train-Test Split ✂️:** Membagi data dengan proporsi **80% Data Latih** dan **20% Data Uji** menggunakan parameter `stratify`.
+4. **Feature Scaling 📏:** Menerapkan `StandardScaler` untuk menyamakan skala varians pada fitur numerik.
 
 ### ▶️ Eksekusi Data Preparation
 
@@ -139,13 +163,24 @@ print("✅ Proses Data Preparation Selesai Sukses!")
 print(f"X_train shape: {X_train_scaled.shape} | X_test shape: {X_test_scaled.shape}")
 ```
 
+### 📝 Laporan Kualitas Data
+
+| Aspek | Status | Keterangan |
+|---|---|---|
+| 👥 **Duplikat** | ✅ Bersih | Tidak ditemukan baris duplikat |
+| ❓ **Missing Values** | 🛠️ Ditangani | `alcohol_consumption` 94.848 nilai kosong → kolom tidak dipakai dalam fitur |
+| 📊 **Distribusi Target** | ⚠️ Imbalance | Kelas 0: 94.854 \| Kelas 1: 63.501 |
+| 🔢 **Encoding** | ✅ Selesai | Semua kolom kategorikal dikonversi ke numerik |
+| 📏 **Scaling** | ✅ Selesai | StandardScaler diterapkan pada fitur numerik |
+
 ---
 
-## 🤖 5. Modeling
-Tahap permodelan mengevaluasi dan mengonfrontasi dua pendekatan arsitektur klasifikasi yang berbeda: ⚔️
+## 🤖 6. Modeling
+
+Tahap permodelan mengevaluasi dua pendekatan arsitektur klasifikasi yang berbeda: ⚔️
 
 * **Logistic Regression:** Algoritma parametrik yang memetakan kombinasi linear dari fitur input ke dalam fungsi sigmoid untuk menghasilkan output probabilitas. 📉
-* **XGBoost Classifier:** Algoritma berbasis *ensemble decision trees* sekuensial yang menerapkan regularisasi formal dan minimalisasi fungsi kerugian (*loss function*) secara presisi guna mereduksi *overfitting*. ⚡
+* **XGBoost Classifier:** Algoritma berbasis *ensemble decision trees* sekuensial yang menerapkan regularisasi formal dan minimalisasi fungsi kerugian (*loss function*) secara presisi. ⚡
 
 ### ▶️ Training Model
 
@@ -153,11 +188,9 @@ Tahap permodelan mengevaluasi dan mengonfrontasi dua pendekatan arsitektur klasi
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 
-# Inisialisasi model
 model_lr = LogisticRegression(random_state=42)
 model_xgb = XGBClassifier(random_state=42, eval_metric='logloss')
 
-# Proses pelatihan
 model_lr.fit(X_train_scaled, y_train)
 model_xgb.fit(X_train_scaled, y_train)
 
@@ -166,27 +199,15 @@ print("✅ Model Logistic Regression dan XGBoost Classifier berhasil dilatih!")
 
 ---
 
-## 🏆 6. Evaluation
-Pengujian performa model dilakukan secara objektif menggunakan data uji yang belum pernah dilihat sebelumnya selama fase pelatihan. Mengingat domain penelitian berada pada sektor medis, metrik **Recall** menjadi prioritas evaluasi utama. 📊🔬
+## 🏆 7. Evaluation
 
-### 📊 Hasil Performa Model
-
-| Metrik Evaluasi | Logistic Regression (Baseline) 📉 | XGBoost Classifier (Advanced) ⚡ |
-| :--- | :---: | :---: |
-| **Akurasi Global** | 0.70 (70%) | **0.70 (70%)** |
-| **Precision (Kelas 1)** | 0.65 | **0.65** |
-| **Recall (Sensitivitas Kelas 1)** | 0.51 | **0.54** |
-| **F1-Score (Kelas 1)** | 0.57 | **0.59** |
-
-**Kesimpulan Analisis:**
-Meskipun kedua model menghasilkan nilai akurasi global yang sama yaitu **70%**, **XGBoost Classifier** terbukti lebih unggul dalam aspek **Recall** untuk kelas berisiko tinggi (Kelas 1), yaitu sebesar **0.54** dibandingkan Logistic Regression yang hanya **0.51**. Dalam konteks medis, peningkatan nilai *Recall* ini sangat krusial karena berhasil mereduksi jumlah pasien berisiko yang salah terprediksi sebagai pasien sehat (*False Negative*). Oleh karena itu, XGBoost dipilih sebagai model akhir untuk tahap *deployment*. 🎉
+Pengujian performa model dilakukan menggunakan data uji yang belum pernah dilihat selama pelatihan. Dalam domain medis, metrik **Recall** menjadi prioritas utama untuk meminimalisir *False Negative*. 📊🔬
 
 ### ▶️ Classification Report & Confusion Matrix
 
 ```python
 from sklearn.metrics import classification_report, confusion_matrix
 
-# Prediksi data uji
 y_pred_lr = model_lr.predict(X_test_scaled)
 y_pred_xgb = model_xgb.predict(X_test_scaled)
 
@@ -196,7 +217,6 @@ print(classification_report(y_test, y_pred_lr))
 print("\n==================== REPORT XGBOOST CLASSIFIER ===================")
 print(classification_report(y_test, y_pred_xgb))
 
-# Visualisasi Heatmap Confusion Matrix Berdampingan
 fig, ax = plt.subplots(1, 2, figsize=(14, 5))
 sns.heatmap(confusion_matrix(y_test, y_pred_lr), annot=True, fmt='d', cmap='Blues', ax=ax[0])
 ax[0].set_title('Confusion Matrix - Logistic Regression')
@@ -214,12 +234,51 @@ plt.show()
 
 ![Confusion Matrix Logistic Regression vs XGBoost](img/2.png)
 
+### ▶️ Contoh Hasil Prediksi vs Jawaban Asli
+
+```python
+target_name = ['Risiko Rendah', 'Risiko Tinggi']
+
+contoh_xgb = X_test.copy().reset_index(drop=True)
+contoh_xgb['Diagnosis Asli']     = [target_name[l] for l in y_test.values]
+contoh_xgb['Diagnosis Prediksi'] = [target_name[l] for l in y_pred_xgb]
+contoh_xgb['Benar?'] = ['✅' if a == p else '❌' for a, p in zip(y_test.values, y_pred_xgb)]
+
+print('10 Contoh Hasil Prediksi XGBoost:')
+print(contoh_xgb[['Diagnosis Asli', 'Diagnosis Prediksi', 'Benar?']].head(10).to_string())
+```
+
+### 📊 Hasil Performa Model
+
+| Metrik Evaluasi | Logistic Regression 📉 | XGBoost Classifier ⚡ |
+| :--- | :---: | :---: |
+| **Akurasi Global** | 0.70 (70%) | **0.70 (70%)** |
+| **Precision (Kelas 1)** | 0.65 | **0.65** |
+| **Recall (Kelas 1)** | 0.51 | **0.54** |
+| **F1-Score (Kelas 1)** | 0.57 | **0.59** |
+
+### 🔍 Analisis Precision vs Recall
+
+| Metrik | Logistic Regression | XGBoost |
+|---|---|---|
+| **Precision Kelas 1** | 0.65 | 0.65 |
+| **Recall Kelas 1** | 0.51 | 0.54 |
+
+- **Precision 0.65**: Dari semua pasien yang diprediksi berisiko tinggi, 65% memang benar-benar berisiko.
+- **Recall LR (0.51)**: Dari total pasien yang berisiko, Logistic Regression hanya berhasil mendeteksi 51% — artinya **49% pasien berisiko tidak terdeteksi**.
+- **Recall XGBoost (0.54)**: XGBoost berhasil mendeteksi 54% pasien berisiko — **lebih baik 3% dibanding LR**, yang dalam konteks medis sangat berarti.
+
+### ⚠️ Analisis Ketidakseimbangan Data
+
+Dataset ini memiliki **distribusi kelas yang tidak seimbang** (*imbalanced*): kelas 0 (Tidak Serangan) berjumlah **94.854** sedangkan kelas 1 (Serangan Jantung) hanya **63.501**. Kondisi ini membuat model cenderung lebih mudah memprediksi kelas mayoritas (0), sehingga nilai Recall untuk kelas 1 menjadi lebih rendah. Hal ini menjadi salah satu faktor mengapa akurasi global 70% tidak sepenuhnya mencerminkan kemampuan model dalam mendeteksi kasus berisiko tinggi secara nyata.
+
 ---
 
-## 🚀 7. Deployment
+## 🚀 8. Deployment
+
 Model terbaik (**XGBoost**) beserta objek **StandardScaler** diekspor ke dalam berkas biner `.pkl` memanfaatkan pustaka `joblib`. 📦
 
-Sistem dideploy secara publik pada platform cloud **Hugging Face Spaces** dengan menggunakan framework antarmuka **Gradio**. Aplikasi dirancang dengan panel kendali interaktif seperti *sliders* dan *dropdown selection*, memungkinkan praktisi medis untuk memasukkan indikator klinis pasien baru dan mendapatkan kalkulasi probabilitas risiko secara *real-time*. ⚙️🌐
+Sistem dideploy secara publik pada platform cloud **Hugging Face Spaces** dengan menggunakan framework antarmuka **Gradio**. ⚙️🌐
 
 ### ▶️ Simpan dan Download Model
 
@@ -227,18 +286,29 @@ Sistem dideploy secara publik pada platform cloud **Hugging Face Spaces** dengan
 import joblib
 from google.colab import files
 
-# Simpan model dan scaler
 joblib.dump(model_xgb, 'model_SerJan_xgb.pkl')
 joblib.dump(scaler, 'scaler.pkl')
 
 print("✅ Berhasil membuat file .pkl!")
-
-# Download ke komputer
 print("⬇️ Memulai pengunduhan file ke komputer...")
 files.download('model_SerJan_xgb.pkl')
 files.download('scaler.pkl')
 ```
 
 👉 **[Buka Aplikasi Demo Prediksi Risiko Serangan Jantung](https://huggingface.co/spaces/saggrain/prediksi-SerJan)** 👈
+
+---
+
+## ✅ 9. Kesimpulan
+
+Berdasarkan eksperimen yang telah dilakukan, berikut poin-poin utama yang dapat disimpulkan:
+
+1. **Faktor Risiko Utama:** Fitur seperti `cholesterol_level`, `hypertension`, `diabetes`, dan `stress_level` memiliki korelasi signifikan terhadap kejadian serangan jantung pada masyarakat Indonesia.
+
+2. **Perbandingan Model:** Meskipun kedua model menghasilkan akurasi global yang sama sebesar **70%**, **XGBoost Classifier** terbukti lebih unggul dengan nilai **Recall 0.54** dibandingkan Logistic Regression yang hanya **0.51**. Dalam konteks medis, selisih ini sangat krusial karena berarti lebih sedikit pasien berisiko yang lolos tidak terdeteksi (*False Negative*).
+
+3. **Ketidakseimbangan Data:** Distribusi kelas yang tidak seimbang (60:40) menjadi tantangan utama yang memengaruhi performa Recall model. Teknik seperti SMOTE atau *class weighting* dapat dipertimbangkan untuk meningkatkan performa di iterasi berikutnya.
+
+4. **Model Terpilih:** **XGBoost Classifier** dipilih sebagai model final untuk deployment karena keunggulan Recall-nya yang lebih tinggi, menjadikannya lebih andal sebagai instrumen skrining preventif serangan jantung. 🎉
 
 ---
