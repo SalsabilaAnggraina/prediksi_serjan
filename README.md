@@ -99,7 +99,7 @@ plt.tight_layout()
 plt.savefig('img/1.png', dpi=150, bbox_inches='tight')
 plt.close()
 
-display(Image(filename='img/1.png'))
+display(Image(filename='/content/drive/MyDrive/ML/img/1.png'))
 ```
 
 ```python
@@ -203,7 +203,7 @@ plt.tight_layout()
 plt.savefig('img/2.png', dpi=150, bbox_inches='tight')
 plt.close()
 
-display(Image(filename='img/2.png'))
+display(Image(filename='/content/drive/MyDrive/ML/img/2.png'))
 ```
 
 ---
