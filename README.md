@@ -53,6 +53,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import requests
 from IPython.display import Image, display
 
 # Membaca file dataset
@@ -96,10 +97,11 @@ plt.xlabel('Status Serangan Jantung')
 plt.ylabel('Usia (Tahun)')
 
 plt.tight_layout()
-plt.savefig('img/1.png', dpi=150, bbox_inches='tight')
 plt.close()
 
-display(Image(filename='/content/drive/MyDrive/ML/img/1.png'))
+# Ambil gambar langsung dari GitHub
+response = requests.get('https://raw.githubusercontent.com/SalsabilaAnggraina/prediksi_serjan/main/img/1.png')
+display(Image(data=response.content))
 ```
 
 ```python
@@ -200,10 +202,11 @@ ax[1].set_xlabel('Prediksi')
 ax[1].set_ylabel('Kenyataan Asli')
 
 plt.tight_layout()
-plt.savefig('img/2.png', dpi=150, bbox_inches='tight')
 plt.close()
 
-display(Image(filename='/content/drive/MyDrive/ML/img/2.png'))
+# Ambil gambar langsung dari GitHub
+response = requests.get('https://raw.githubusercontent.com/SalsabilaAnggraina/prediksi_serjan/main/img/2.png')
+display(Image(data=response.content))
 ```
 
 ---
